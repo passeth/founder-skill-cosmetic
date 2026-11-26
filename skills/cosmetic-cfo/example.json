@@ -1,0 +1,25 @@
+{
+  "product": "솔트브리즈 1L 퍼퓸 바디워시 (가상 예시)",
+  "size_ml": 1000,
+  "unit_cost": {
+    "content": {"won_per_g": 1.8, "grams": 1000, "source": "내용물 목표 원가", "as_of": "2026-01-01"},
+    "items": [
+      {"label": "용기+펌프", "cost": 800, "source": "목표가"},
+      {"label": "인쇄 (실크 1도)", "cost": 150, "source": "목표가"},
+      {"label": "단상자", "cost": 400, "source": "목표가"},
+      {"label": "충진·제조", "cost": 700, "source": "목표가"}
+    ]
+  },
+  "vat_included": true,
+  "vat_rate": 0.10,
+  "commission_rate": 0.20,
+  "shipping_per_order": 2500,
+  "bundles": [
+    {"name": "단품", "units_per_order": 1, "price": 10900, "unit_share": 0.5},
+    {"name": "2개 구성", "units_per_order": 2, "price": 16900, "unit_share": 0.5}
+  ],
+  "initial_units": 30000,
+  "one_off": [
+    {"label": "인플루언서", "cost": 5000000}
+  ]
+}

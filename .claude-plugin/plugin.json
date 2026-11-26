@@ -6,8 +6,8 @@
     "name": "Jake Schincariol",
     "url": "https://opusjake.ai"
   },
-  "homepage": "https://github.com/Jakeschincariol/founder-skill",
-  "repository": "https://github.com/Jakeschincariol/founder-skill",
+  "homepage": "https://github.com/passeth/founder-skill-cosmetic",
+  "repository": "https://github.com/passeth/founder-skill-cosmetic",
   "license": "MIT",
   "keywords": [
     "claude-code",
@@ -16,6 +16,8 @@
     "business-plan",
     "unit-economics",
     "market-validation",
-    "subagents"
+    "subagents",
+    "cosmetics",
+    "product-planning"
   ]
 }

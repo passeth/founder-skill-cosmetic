@@ -7,6 +7,9 @@ from _load import ROOT, SKILLS_DIR
 
 SKILLS = ["founder-board", "founder-marketing", "founder-cfo", "founder-consumer", "founder-launch",
           "founder-pricing", "founder-offer", "founder-competitors", "founder-brand", "founder-ops", "founder-plan"]
+COSMETIC = ["cosmetic-intake", "cosmetic-competitors", "cosmetic-consumer", "cosmetic-pricing", "cosmetic-cfo",
+            "cosmetic-formula", "cosmetic-claims", "cosmetic-brand", "cosmetic-marketing", "cosmetic-plan"]
+HANGUL = re.compile("[\uac00-\ud7a3]")
 ABOUT = ("Eleven free Claude skills that test a business before you launch it: a board trained on Hormozi, "
          "Thiel and Jobs, a marketing director, a CFO, and a consumer panel of 100 buyer agents. Free, MIT.")
 
@@ -32,7 +35,21 @@ def text_files():
 class Repo(unittest.TestCase):
     def test_eleven_skill_folders(self):
         found = sorted(d for d in os.listdir(SKILLS_DIR) if os.path.isfile(os.path.join(SKILLS_DIR, d, "SKILL.md")))
-        self.assertEqual(found, sorted(SKILLS))
+        self.assertEqual([d for d in found if d.startswith("founder-")], sorted(SKILLS))
+        self.assertEqual(found, sorted(SKILLS + COSMETIC))
+
+    def test_cosmetic_skills_are_korean_with_english_names(self):
+        for s in COSMETIC:
+            fm, text = frontmatter(os.path.join(SKILLS_DIR, s, "SKILL.md"))
+            self.assertIn("name: %s\n" % s, fm + "\n", s)
+            desc = fm.split("description:", 1)[1]
+            self.assertGreater(len(HANGUL.findall(desc)), 60, "%s description should be Korean" % s)
+            self.assertIn('"', desc, "%s description needs Korean trigger phrases" % s)
+            self.assertGreater(len(text.splitlines()), 60, s)
+            self.assertIn("cosmetic/<", text, "%s must work in cosmetic/<slug>/" % s)
+            self.assertNotIn("founder/", text, "%s must not write to founder/" % s)
+            for rule in ("가설", "확인 필요", "내부용", "MCP"):
+                self.assertIn(rule, text, "%s is missing the shared rule %r" % (s, rule))
 
     def test_frontmatter_name_and_description(self):
         for s in SKILLS:
@@ -43,7 +60,7 @@ class Repo(unittest.TestCase):
             self.assertGreater(len(text.splitlines()), 60, s)
 
     def test_tools_named_in_skills_exist(self):
-        for s in SKILLS:
+        for s in SKILLS + COSMETIC:
             _, text = frontmatter(os.path.join(SKILLS_DIR, s, "SKILL.md"))
             for tool in re.findall(r"\$\{CLAUDE_SKILL_DIR\}/([\w.\-/]+\.(?:py|md))", text):
                 self.assertTrue(os.path.exists(os.path.normpath(os.path.join(SKILLS_DIR, s, tool))), "%s: %s" % (s, tool))
@@ -63,7 +80,7 @@ class Repo(unittest.TestCase):
     def test_readme_carries_the_reel_copy(self):
         with open(os.path.join(ROOT, "README.md"), encoding="utf-8") as fh:
             readme = " ".join(fh.read().split())
-        self.assertTrue(readme.startswith("# The Founder skill"))
+        self.assertIn("# The Founder skill", readme)
         for line in (
             "Eleven Claude skills that test a business before you launch it. Free, MIT, no signup, no API key, "
             "nothing to connect.",
@@ -79,9 +96,12 @@ class Repo(unittest.TestCase):
             self.assertIn(line, readme)
         for s in SKILLS:
             self.assertIn("`skills/%s`" % s, readme)
+        for s in COSMETIC:
+            self.assertIn("/%s" % s, readme)
 
     def test_examples_parse(self):
-        for rel in ("founder-cfo/example.json", "founder-consumer/customer.example.json"):
+        for rel in ("founder-cfo/example.json", "founder-consumer/customer.example.json", "cosmetic-cfo/example.json",
+                    "cosmetic-cfo/example.aggressive.json", "cosmetic-consumer/customer.example.json"):
             with open(os.path.join(SKILLS_DIR, rel), encoding="utf-8") as fh:
                 json.load(fh)
 

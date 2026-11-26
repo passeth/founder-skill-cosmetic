@@ -9,6 +9,7 @@ that leaves the fewest people unhappy.
     python3 van_westendorp.py founder/panel/answers
     python3 van_westendorp.py prices.csv --out founder/pricing-curve.md
     python3 van_westendorp.py founder/panel/answers --json
+    python3 van_westendorp.py cosmetic/<slug>/panel/answers --price 10900 --currency won
 
 Input is either the panel's answers folder (one JSON per buyer, written by
 founder-consumer) or a CSV with the columns too_cheap, cheap, expensive,
@@ -121,8 +122,17 @@ def analyse(rows, step=None):
             "median": {k: sorted(r[i] for r in rows)[len(rows) // 2] for i, k in enumerate(KEYS)}}
 
 
-def report(res, dropped, price=None):
-    m = lambda v: "n/a" if v is None else "$%.2f" % v
+def money(v, currency="$"):
+    """$6.50 by default; with currency="won", 10,900원 (Korean prices have no decimals)."""
+    if v is None:
+        return "n/a"
+    if currency == "won":
+        return "{:,.0f}원".format(v)
+    return "$%.2f" % v
+
+
+def report(res, dropped, price=None, currency="$"):
+    m = lambda v: money(v, currency)
     p = res["points"]
     L = ["# Price sensitivity", "",
          "%d complete answers%s. Simulated buyers: use this to pick what to test, not as the final word." % (
@@ -148,6 +158,7 @@ def main(argv=None):
     ap.add_argument("--price", type=float, help="your current price, to place it on the range")
     ap.add_argument("--out", help="write the report here (markdown)")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--currency", choices=("$", "won"), default="$", help="how prices are printed (default $)")
     a = ap.parse_args(argv)
     try:
         rows, dropped = read(a.source)
@@ -158,7 +169,7 @@ def main(argv=None):
     if a.json:
         print(json.dumps(dict(res, dropped=dropped), indent=1))
         return 0
-    text = report(res, dropped, a.price)
+    text = report(res, dropped, a.price, a.currency)
     if a.out:
         with open(a.out, "w", encoding="utf-8") as fh:
             fh.write(text)
